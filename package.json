@@ -24,7 +24,6 @@
   },
   "homepage": "https://github.com/Informatievlaanderen/OSLO-elasticsearch-lambda-proxy#readme",
   "dependencies": {
-    "@types/node": "^14.14.0",
-    "node-fetch": "^2.6.1"
+    "@types/node": "^14.14.0"
   }
 }

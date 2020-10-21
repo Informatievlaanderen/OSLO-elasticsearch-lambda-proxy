@@ -1,4 +1,4 @@
-const fetch = require('node-fetch');
+
 
 const ES_ENDPOINT = process.env.ES_ENDPOINT;
 const USERNAME = process.env.USERNAME;
