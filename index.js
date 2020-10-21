@@ -12,7 +12,7 @@ exports.handler = async (event) => {
 }
 
 function consultElasticsearch(data, httpMethod){
-    return new Promise(((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         let headers = new Headers();
         headers.append('Authorization', 'Basic' + Buffer.from(USERNAME + ":" + PASSWORD).toString('base64'))
 
@@ -25,7 +25,7 @@ function consultElasticsearch(data, httpMethod){
         }).catch(error => {
             reject(error);
         })
-    })
+    });
 }
 
 
