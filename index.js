@@ -1,5 +1,3 @@
-
-
 const ES_ENDPOINT = process.env.ES_ENDPOINT;
 const USERNAME = process.env.USERNAME;
 const PASSWORD = process.env.PASSWORD;
@@ -14,7 +12,7 @@ exports.handler = async (event) => {
 }
 
 function consultElasticsearch(data, httpMethod){
-    return new Promise( ((resolve, reject) => {
+    return new Promise(((resolve, reject) => {
         let headers = new Headers();
         headers.append('Authorization', 'Basic' + Buffer.from(USERNAME + ":" + PASSWORD).toString('base64'))
 
@@ -27,7 +25,7 @@ function consultElasticsearch(data, httpMethod){
         }).catch(error => {
             reject(error);
         })
-    }))
+    })
 }
 
 
