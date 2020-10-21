@@ -29,4 +29,3 @@ function consultElasticsearch(data, httpMethod){
 }
 
 
-
