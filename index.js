@@ -1,31 +1,59 @@
-const ES_ENDPOINT = process.env.ES_ENDPOINT;
-const USERNAME = process.env.USERNAME;
-const PASSWORD = process.env.PASSWORD;
-
+const AWS = require('aws-sdk');
 exports.handler = async (event) => {
-    const eventData = JSON.stringify(event);
-    const method = eventData.httpMethod;
-    const body = eventData.body;
-
-    const promise = consultElasticsearch(body, method);
-    return promise;
-}
-
-function consultElasticsearch(data, httpMethod){
+    var ES_ENDPOINT = process.env.ES_ENDPOINT;
+    var USERNAME = process.env.USERNAME;
+    var PASSWORD = process.env.PASSWORD;
+    console.log('Received event:', JSON.stringify(event, null, 2));
+    return consultElasticsearch(
+        ES_ENDPOINT,
+        USERNAME,
+        PASSWORD,
+        event.requestContext.http.method,
+        event.requestContext.http.path,
+        event.rawQueryString,
+        event.body);
+};
+function consultElasticsearch(
+    esEndpoint,
+    username,
+    password,
+    httpMethod,
+    path,
+    querystring,
+    data) {
     return new Promise((resolve, reject) => {
-        let headers = new Headers();
-        headers.append('Authorization', 'Basic' + Buffer.from(USERNAME + ":" + PASSWORD).toString('base64'))
-
-        fetch(ES_ENDPOINT, {
-            method: httpMethod,
-            headers: headers,
-            body: data
-        }).then(response => {
-            resolve(response)
-        }).catch(error => {
+        var endpoint = new AWS.Endpoint(esEndpoint);
+        var request = new AWS.HttpRequest(endpoint, 'eu-west-1');
+        var finalPath = path.substring('/deploy/search'.length);
+        if (finalPath == '') finalPath = '/';
+        if (querystring != '') querystring = '?' + querystring;
+        request.method = httpMethod;
+        request.path = finalPath + querystring;
+        request.body = data;
+        request.headers['Host'] = esEndpoint;
+        request.headers['Content-Type'] = 'application/json';
+        request.headers['Authorization'] = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
+        if (request.body) {
+            request.headers['Content-Length'] = Buffer.byteLength(request.body);
+        }
+        console.log('Sending request: ' + request.method + ' ' + request.path)
+        var credentials = new AWS.EnvironmentCredentials('AWS');
+        var signer = new AWS.Signers.V4(request, 'es');
+        signer.addAuthorization(credentials, new Date());
+        var client = new AWS.HttpClient();
+        client.handleRequest(request, null, function(response) {
+            console.log(response.statusCode + ' ' + response.statusMessage);
+            var responseBody = '';
+            response.on('data', function (chunk) {
+                responseBody += chunk;
+            });
+            response.on('end', function (chunk) {
+                console.log('Response body: ' + responseBody);
+                resolve(responseBody);
+            });
+        }, function(error) {
+            console.log('Error: ' + error);
             reject(error);
-        })
+        });
     });
 }
-
-
